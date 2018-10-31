@@ -1,0 +1,12 @@
+spring:
+  application:
+    name: red-package
+  mvc:
+    view:
+       prefix: /static/
+       suffix: .ftl
+  freemarker:
+    prefix: /templates/
+server:
+  port: 8080
+
