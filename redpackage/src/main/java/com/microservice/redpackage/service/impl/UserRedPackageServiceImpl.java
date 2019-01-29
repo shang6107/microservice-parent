@@ -7,6 +7,8 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import redis.clients.jedis.Jedis;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 /**
  * @author 上官炳强
  * @description
@@ -32,6 +34,7 @@ public class UserRedPackageServiceImpl implements UserRedPackageService {
             + "return 1 \n";
     String sha1;
 
+    AtomicInteger count = new AtomicInteger(0);
 
     @Override
     public Long grabRedPackageByRedis(Long redPackageId, Long userId) {
@@ -42,10 +45,10 @@ public class UserRedPackageServiceImpl implements UserRedPackageService {
             if (sha1 == null) {
                 sha1 = jedis.scriptLoad(script);
             }
-            Object evalsha = jedis.evalsha(sha1, 1, redPackageId + "", args);
+            Object evalsha = jedis.evalsha(sha1, 1, "p", args);
             result = (Long) evalsha;
             if (result == 2) {
-                String unitAmountStr = jedis.hget("red_package_" + redPackageId, "unit_amount");
+                String unitAmountStr = jedis.hget("red_package_p", "unit_amount");
                 Double v = Double.parseDouble(unitAmountStr);
                 System.err.println("thread_name = " + Thread.currentThread().getName());
                 redPackageService.saveUserRedPackageByRedis(redPackageId, v);
@@ -57,6 +60,8 @@ public class UserRedPackageServiceImpl implements UserRedPackageService {
                 jedis.close();
             }
         }
+//        System.out.println("第" + (count.addAndGet(1)) + "次请求");
+//        System.out.println("请求结果：" + result);
         return result;
     }
 }

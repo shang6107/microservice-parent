@@ -20,7 +20,7 @@ public class RedisTemplateConfig {
     public RedisTemplate redisTemplate(){
         JedisPoolConfig poolConfig = new JedisPoolConfig();
         JedisConnectionFactory factory = new JedisConnectionFactory(poolConfig);
-        factory.setHostName("localhost");
+        factory.setHostName("192.168.211.128");
         factory.setPort(6379);
         factory.afterPropertiesSet();
         RedisTemplate redisTemplate = new RedisTemplate();

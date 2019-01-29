@@ -25,7 +25,7 @@ import java.util.List;
 @Service
 public class RedPackageServiceImpl implements RedPackageService {
 
-    private final static String PREFIX = "red_package_list_";
+    private final static String PREFIX = "red_package_list_p";
 
     private final static int TIME_SIZE = 100;
 
@@ -37,13 +37,15 @@ public class RedPackageServiceImpl implements RedPackageService {
 
     @Async
     @Override
+    @SuppressWarnings("all")
     public void saveUserRedPackageByRedis(Long id, Double unitAccount) {
         System.err.println("开始保存数据");
         Long start = System.currentTimeMillis();
 
-        BoundListOperations boundListOperations = redisTemplate.boundListOps(PREFIX + id);
+        BoundListOperations boundListOperations = redisTemplate.boundListOps(PREFIX );
         Long size = boundListOperations.size();
 
+        //
         Long times = size % TIME_SIZE == 0 ? size / TIME_SIZE : size / TIME_SIZE + 1;
 
         int count = 0;
@@ -68,17 +70,17 @@ public class RedPackageServiceImpl implements RedPackageService {
                 Long userId = Long.parseLong(userIdStr);
                 Long time = Long.parseLong(timeStr);
                 UserRedPackage userRedPackage = new UserRedPackage();
-                userRedPackage.setRedPackageId(id);
+                userRedPackage.setRedPackageId("p");
                 userRedPackage.setUserId(userId);
                 userRedPackage.setAmount(unitAccount);
                 userRedPackage.setGrabTime(new Timestamp(time));
-                userRedPackage.setNote("抢红包：" + id);
+                userRedPackage.setNote("抢红包：p");
                 userRedPackages.add(userRedPackage);
             }
             count += executeBatch(userRedPackages);
 
         }
-        redisTemplate.delete(PREFIX + id);
+        redisTemplate.delete(PREFIX );
         Long end = System.currentTimeMillis();
         System.err.println("保存数据结束， 共消耗：" + (end - start) + "毫秒， 共：" + count + "条数据被保存。");
 
@@ -94,15 +96,15 @@ public class RedPackageServiceImpl implements RedPackageService {
             stmt = conn.createStatement();
             SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
             for (UserRedPackage userRedPackage : userRedPackages) {
-                String sql = "UPDATE t_red_package SET STOCK = STOCK - 1 WHERE ID = " + userRedPackage.getRedPackageId();
+//                String sql = "UPDATE t_red_package SET STOCK = STOCK - 1 WHERE ID = '" + userRedPackage.getRedPackageId() + "'";
                 String sql1 = "INSERT INTO t_user_red_package(RED_PACKAGE_ID, USER_ID, AMOUNT, GRAB_TIME, NOTE) "
                         + "VALUES("
-                        + userRedPackage.getRedPackageId() + ", "
+                        + "'" + userRedPackage.getRedPackageId() + "', "
                         + userRedPackage.getUserId() + ", "
                         + userRedPackage.getAmount() + ", "
                         + "'" + format.format(userRedPackage.getGrabTime()) + "', "
                         + "'" + userRedPackage.getNote() + "')";
-                stmt.addBatch(sql);
+//                stmt.addBatch(sql);
                 stmt.addBatch(sql1);
             }
             count = stmt.executeBatch();
@@ -130,6 +132,6 @@ public class RedPackageServiceImpl implements RedPackageService {
                 }
             }
         }
-        return count.length / 2;
+        return count.length;
     }
 }

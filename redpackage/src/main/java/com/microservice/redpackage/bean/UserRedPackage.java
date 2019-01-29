@@ -1,6 +1,8 @@
 package com.microservice.redpackage.bean;
 
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.io.Serializable;
 import java.sql.Timestamp;
@@ -13,7 +15,7 @@ import java.sql.Timestamp;
 @Data
 public class UserRedPackage implements Serializable {
     private Long id;
-    private Long redPackageId;
+    private String redPackageId;
     private Long userId;
     private Double amount;
     private Timestamp grabTime;
